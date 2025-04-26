@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>S3 Express</title>
+  </head>
+
+  <body>
+    <h1>Welcome to S3 Express!</h1>
+    <h3>🦄🌈✨👋🌎🌍🌏✨🌈🦄</h3>
+    <br />
+    <p>Put-Object</p>
+    <input type="file" id="po_file_input" accept="*/*" onclick="handleChooseFile()" nonce="<%= res.locals.nonce %>">
+    <br />
+    <input type="text" id="po_bucket_input" placeholder="Enter bucket">
+    <input type="text" id="po_key_input" placeholder="Enter key">
+    <button id="po_button" onclick="handleUploadFile()">Submit</button>
+    <br />
+    <p>Get-Object</p>
+    <input type="text" id="go_bucket_input" placeholder="Enter bucket">
+    <input type="text" id="go_key_input" placeholder="Enter key">
+    <button id="go_button" onclick="handleGetObject()">Submit</button>
+    <br />
+    <p>Delete-Object</p>
+    <input type="text" id="do_bucket_input" placeholder="Enter bucket">
+    <input type="text" id="do_key_input" placeholder="Enter key">
+    <button id="do_button" onclick="handleDeleteObject()">Submit</button>
+    <br />
+
+    <script id="upload_script" type="text/javascript" nonce="<%= res.locals.nonce %>">
+
+      document.getElementById('po_button').style.visibility = 'hidden';
+
+      async function handleChooseFile() {
+        document.getElementById('po_button').style.visibility = 'visible';
+      }
+
+      async function handleUploadFile() {
+        // build form data
+        const fileInput = document.getElementById('po_file_input');
+        const bucketInput = document.getElementById('po_bucket_input');
+        const keyInput = document.getElementById('po_key_input');
+        const file = fileInput.files[0];
+        const Bucket = bucketInput.value;
+        const Key = keyInput.value;
+        const init = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ Bucket, Key })
+        };
+        const response = await fetch('/create-presigned-post', init);
+        const { url, fields } = await response.json();
+        const data = { ...fields, file };
+        const body = new FormData();
+        Object.entries(data).forEach(([k, v]) => body.append(k, v));
+        await fetch(url, { method: 'POST', body });
+      }
+    
+      async function handleGetObject() {
+        const bucketInput = document.getElementById('go_bucket_input');
+        const keyInput = document.getElementById('go_key_input');
+        const Bucket = bucketInput.value;
+        const Key = keyInput.value;
+        const init = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ Bucket, Key })
+        };
+        const response = await fetch('/create-presigned-url', init);
+        const url = await response.text();
+        console.log(url);
+        window.open(url, '_blank');
+      }
+
+      async function handleDeleteObject() {
+        const bucketInput = document.getElementById('do_bucket_input');
+        const keyInput = document.getElementById('do_key_input');
+        const Bucket = bucketInput.value;
+        const Key = keyInput.value;
+        const init = { method: 'DELETE' };
+        await fetch(`/object/${Bucket}/${Key}`, init);
+      }
+    </script>
+  </body>
+</html>

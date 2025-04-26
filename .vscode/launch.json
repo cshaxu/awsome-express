@@ -1,0 +1,11 @@
+{
+  "version": "0.0.0",
+  "configurations": [
+    {
+      "name": "Express.js: debug server",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run dev"
+    }
+  ]
+}

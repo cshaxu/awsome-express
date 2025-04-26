@@ -1,0 +1,8 @@
+{
+  "ignorePatterns": [],
+  "extends": ["next/core-web-vitals", "plugin:prettier/recommended"],
+  "rules": {
+    "@next/next/no-img-element": "off",
+    "prettier/prettier": ["error", { "endOfLine": "auto" }]
+  }
+}
