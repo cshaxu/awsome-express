@@ -10,8 +10,7 @@
   <body>
     <h1>Welcome to S3 Express!</h1>
     <h3>🦄🌈✨👋🌎🌍🌏✨🌈🦄</h3>
-    <h3>Your storage path is <%= path %></h3>
-    <br />
+    <p>Your storage path is <%= path %></p>
     <p>Put-Object</p>
     <input type="file" id="po_file_input" accept="*/*" onclick="handleChooseFile()" nonce="<%= res.locals.nonce %>">
     <br />
@@ -46,6 +45,10 @@
         const file = fileInput.files[0];
         const Bucket = bucketInput.value;
         const Key = keyInput.value;
+        if (!Bucket || !Key || !file) {
+          alert('Bucket, Key and File are required');
+          return;
+        }
         const init = {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -64,6 +67,10 @@
         const keyInput = document.getElementById('go_key_input');
         const Bucket = bucketInput.value;
         const Key = keyInput.value;
+        if (!Bucket || !Key) {
+          alert('Bucket and Key are required');
+          return;
+        }
         const init = {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -80,6 +87,10 @@
         const keyInput = document.getElementById('do_key_input');
         const Bucket = bucketInput.value;
         const Key = keyInput.value;
+        if (!Bucket || !Key) {
+          alert('Bucket and Key are required');
+          return;
+        }
         const init = { method: 'DELETE' };
         await fetch(`/object/${Bucket}/${Key}`, init);
       }
