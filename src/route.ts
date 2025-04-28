@@ -2,6 +2,7 @@ import { upload } from '@/multer.js';
 import express, { NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
 import createHttpError from 'http-errors';
+import { LOCAL_STORAGE_PATH } from './config.js';
 import Service from './service.js';
 
 function applyCsp(req: Request, res: Response, next: NextFunction) {
@@ -250,7 +251,7 @@ router.post('/delete-object', async (req, res, next) => {
 });
 
 router.get<{}, { message: string }>('/', applyCsp, (_req, res) => {
-  res.render('home', { res });
+  res.render('home', { path: LOCAL_STORAGE_PATH, res });
 });
 
 export default router;
