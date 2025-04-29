@@ -4,13 +4,13 @@ import {
   PutObjectCommandOutput,
 } from '@aws-sdk/client-s3';
 import { PresignedPost } from '@aws-sdk/s3-presigned-post';
-import { PORT } from './config.js';
+import { BASE_URL } from './config.js';
 
 async function createPresignedPost(
   bucket: string,
   key: string,
 ): Promise<PresignedPost> {
-  const url = `http://localhost:${PORT}/create-presigned-post`;
+  const url = `${BASE_URL}/create-presigned-post`;
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -23,7 +23,7 @@ async function createPresignedUrl(
   bucket: string,
   key: string,
 ): Promise<string> {
-  const url = `http://localhost:${PORT}/create-presigned-url`;
+  const url = `${BASE_URL}/create-presigned-url`;
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -33,13 +33,13 @@ async function createPresignedUrl(
 }
 
 async function headObject(bucket: string, key: string): Promise<Headers> {
-  const url = `http://localhost:${PORT}/object?Bucket=${bucket}&Key=${key}`;
+  const url = `${BASE_URL}/object?Bucket=${bucket}&Key=${key}`;
   const response = await fetch(url, { method: 'HEAD' });
   return response.headers;
 }
 
 export async function getObject(bucket: string, key: string): Promise<Blob> {
-  const url = `http://localhost:${PORT}/object?Bucket=${bucket}&Key=${key}`;
+  const url = `${BASE_URL}/object?Bucket=${bucket}&Key=${key}`;
   const response = await fetch(url, { method: 'GET' });
   return await response.blob();
 }
@@ -49,7 +49,7 @@ async function putObject(
   key: string,
   file: File,
 ): Promise<PutObjectCommandOutput> {
-  const url = `http://localhost:${PORT}/put-object`;
+  const url = `${BASE_URL}/put-object`;
   const formData = new FormData();
   formData.append('Bucket', bucket);
   formData.append('Key', key);
@@ -62,7 +62,7 @@ async function streamObject(
   bucket: string,
   key: string,
 ): Promise<PutObjectCommandOutput> {
-  const url = `http://localhost:${PORT}/stream-object`;
+  const url = `${BASE_URL}/stream-object`;
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -76,7 +76,7 @@ async function copyObject(
   bucket: string,
   key: string,
 ): Promise<CopyObjectCommandOutput> {
-  const url = `http://localhost:${PORT}/copy-object`;
+  const url = `${BASE_URL}/copy-object`;
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -89,7 +89,7 @@ async function deleteObject(
   bucket: string,
   key: string,
 ): Promise<DeleteObjectCommandOutput> {
-  const url = `http://localhost:${PORT}/delete-object`;
+  const url = `${BASE_URL}/delete-object`;
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

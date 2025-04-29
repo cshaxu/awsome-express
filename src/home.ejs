@@ -33,6 +33,11 @@
 
       document.getElementById('po_button').style.visibility = 'hidden';
 
+      async function sendRequest(path, init) {
+        const url = 'http://' + window.location.host + path;
+        return await fetch(url, init);
+      }
+
       async function handleChooseFile() {
         document.getElementById('po_button').style.visibility = 'visible';
       }
@@ -54,12 +59,13 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ Bucket, Key })
         };
-        const response = await fetch('/create-presigned-post', init);
+        const response = await sendRequest('/create-presigned-post', init);
         const { url, fields } = await response.json();
         const data = { ...fields, file };
         const body = new FormData();
         Object.entries(data).forEach(([k, v]) => body.append(k, v));
         await fetch(url, { method: 'POST', body });
+        alert('File uploaded successfully');
       }
     
       async function handleGetObject() {
@@ -76,7 +82,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ Bucket, Key })
         };
-        const response = await fetch('/create-presigned-url', init);
+        const response = await sendRequest('/create-presigned-url', init);
         const url = await response.text();
         console.log(url);
         window.open(url, '_blank');
@@ -92,7 +98,8 @@
           return;
         }
         const init = { method: 'DELETE' };
-        await fetch(`/object/${Bucket}/${Key}`, init);
+        await sendRequest(`/object/${Bucket}/${Key}`, init);
+        alert('File deleted successfully');
       }
     </script>
   </body>
