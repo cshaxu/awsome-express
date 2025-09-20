@@ -3,7 +3,9 @@ import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import { catchError, endRoute } from './middleware.js';
-import route from './route.js';
+import S3Router from './s3/router.js';
+import TextractRouter from './textract/router.js';
+import ViewRouter from './view/router.js';
 const app = express();
 // app.use('/static', express.static('static'));
 
@@ -62,8 +64,12 @@ app.use((_req, res, next) => {
 app.use(express.json());
 app.get('/favicon.ico', (_req, res) => res.status(204));
 
+// view routes
+app.use('/', ViewRouter);
+
 // business logic routes
-app.use('/', route);
+app.use('/s3', S3Router);
+app.use('/textract', TextractRouter);
 
 // final middlewares
 app.use(endRoute);

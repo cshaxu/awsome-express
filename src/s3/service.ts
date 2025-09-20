@@ -1,3 +1,4 @@
+import { BASE_URL, LOCAL_STORAGE_PATH } from '@/config.js';
 import {
   CopyObjectCommandOutput,
   DeleteObjectCommandOutput,
@@ -8,13 +9,12 @@ import { PresignedPost } from '@aws-sdk/s3-presigned-post';
 import { fileTypeFromBuffer } from 'file-type';
 import fs from 'fs';
 import path from 'path';
-import { BASE_URL, LOCAL_STORAGE_PATH } from './config.js';
 
 async function createPresignedPost(
   Bucket: string,
   Key: string,
 ): Promise<PresignedPost> {
-  const url = `${BASE_URL}/put-object`;
+  const url = `${BASE_URL}/s3/put-object`;
   return { url, fields: { Bucket, Key } };
 }
 
@@ -22,7 +22,7 @@ async function createPresignedUrl(
   Bucket: string,
   Key: string,
 ): Promise<string> {
-  return `${BASE_URL}/object/${Bucket}/${Key}`;
+  return `${BASE_URL}/s3/object/${Bucket}/${Key}`;
 }
 
 async function headObject(
@@ -95,7 +95,7 @@ async function deleteObject(
   return { $metadata: {} };
 }
 
-const Service = {
+const S3Service = {
   createPresignedPost,
   createPresignedUrl,
   headObject,
@@ -105,4 +105,4 @@ const Service = {
   deleteObject,
 };
 
-export default Service;
+export default S3Service;

@@ -17,9 +17,10 @@
   "license": "MIT",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.515.0",
+    "@aws-sdk/client-textract": "^3.515.0",
     "@aws-sdk/lib-storage": "^3.421.0",
     "@aws-sdk/s3-presigned-post": "^3.797.0",
-    "@aws-sdk/s3-request-presigner": "^3.421.0",
+    "@aws-sdk/s3-request-presigner": "^3.797.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "ejs": "^3.1.9",
@@ -34,7 +35,10 @@
     "lodash-es": "^4.17.21",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
+    "pdf-parse": "^1.1.1",
+    "pdf2pic": "^3.0.1",
     "prettier": "^3.0.3",
+    "tesseract.js": "^4.1.1",
     "zod": "^3.22.2"
   },
   "devDependencies": {
@@ -45,6 +49,7 @@
     "@types/morgan": "^1.9.6",
     "@types/multer": "^1.4.8",
     "@types/node": "^20.7.1",
+    "@types/pdf-parse": "^1.1.1",
     "prettier-plugin-organize-imports": "^3.2.3",
     "tsc-alias": "^1.8.7",
     "tsconfig-paths": "^4.2.0",

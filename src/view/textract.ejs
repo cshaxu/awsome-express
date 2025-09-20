@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>S3 Express</title>
+    <style>
+      .json-result {
+        background-color: #f5f5f5;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 10px;
+        margin: 10px 0;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+    </style>
+  </head>
+
+  <body>
+    <a href="/">Back</a>
+    <div>
+      <p>Start-Document-Text-Detection</p>
+      <input type="text" id="sdtd_bucket_input" placeholder="Enter bucket name">
+      <input type="text" id="sdtd_key_input" placeholder="Enter key name">
+      <button id="sdtd_button" onclick="handleStartDocumentTextDetection()">Submit</button>
+      <p>Job ID: <span id="sdtd_job_id_span"></span></p>
+    </div>
+    <br />
+    <div>
+      <p>Get Document Text Detection</p>
+      <input type="text" id="gdtd_job_id_input" placeholder="Enter job ID">
+      <button id="gdtd_button" onclick="handleGetDocumentTextDetection()">Submit</button>
+      <div id="gdtd_job_result_div" style="display: none;">
+        <p>Job Result:</p>
+        <pre id="gdtd_job_result_span" class="json-result"></pre>
+      </div>
+    </div>
+    <br />
+    <div>
+      <p>List Jobs</p>
+      <button id="lj_button" onclick="handleListJobs()">Submit</button>
+      <div id="lj_result_div" style="display: none;">
+        <p>Job List:</p>
+        <pre id="lj_result_span" class="json-result"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script id="textract_script" type="text/javascript" nonce="<%= res.locals.nonce %>">
+    async function sendRequest(path, init) {
+      const url = window.location.origin + path;
+      return await fetch(url, init);
+    }
+
+    async function handleStartDocumentTextDetection() {
+      // build form data
+      const bucketInput = document.getElementById('sdtd_bucket_input');
+      const keyInput = document.getElementById('sdtd_key_input');
+      const Bucket = bucketInput.value;
+      const Name = keyInput.value;
+      if (!Bucket || !Name) {
+        alert('Bucket and Key are required');
+        return;
+      }
+      const init = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ DocumentLocation: { S3Object: { Bucket, Name } } })
+      };
+      const response = await sendRequest('/textract/start-document-text-detection', init);
+      const { JobId } = await response.json();
+      document.getElementById('sdtd_job_id_span').textContent = JobId;
+    }
+  
+    async function handleGetDocumentTextDetection() {
+      const jobIdInput = document.getElementById('gdtd_job_id_input');
+      const JobId = jobIdInput.value;
+      if (!JobId) {
+        alert('Job Id is required');
+        return;
+      }
+      const init = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ JobId })
+      };
+      const response = await sendRequest('/textract/get-document-text-detection', init);
+      const json = await response.json();
+      document.getElementById('gdtd_job_result_span').textContent = JSON.stringify(json, null, 2);
+      document.getElementById('gdtd_job_result_div').style.display = 'block';
+    }
+
+    async function handleListJobs() {
+      const init = { method: 'GET' };
+      const response = await sendRequest('/textract/list-jobs', init);
+      const json = await response.json();
+      document.getElementById('lj_result_span').textContent = JSON.stringify(json, null, 2);
+      document.getElementById('lj_result_div').style.display = 'block';
+    }
+  </script>
+  </body>
+</html>

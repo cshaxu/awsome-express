@@ -8,33 +8,39 @@
   </head>
 
   <body>
-    <h1>Welcome to S3 Express!</h1>
-    <h3>🦄🌈✨👋🌎🌍🌏✨🌈🦄</h3>
-    <p>Your storage path is <%= path %></p>
-    <p>Put-Object</p>
-    <input type="file" id="po_file_input" accept="*/*" onclick="handleChooseFile()" nonce="<%= res.locals.nonce %>">
+    <a href="/">Back</a>
     <br />
-    <input type="text" id="po_bucket_input" placeholder="Enter bucket">
-    <input type="text" id="po_key_input" placeholder="Enter key">
-    <button id="po_button" onclick="handleUploadFile()">Submit</button>
+    <div>
+      <p>Put-Object</p>
+      <input type="file" id="po_file_input" accept="*/*" onclick="handleChooseFile()" nonce="<%= res.locals.nonce %>">
+    </div>
     <br />
-    <p>Get-Object</p>
-    <input type="text" id="go_bucket_input" placeholder="Enter bucket">
-    <input type="text" id="go_key_input" placeholder="Enter key">
-    <button id="go_button" onclick="handleGetObject()">Submit</button>
+    <div>
+      <input type="text" id="po_bucket_input" placeholder="Enter bucket">
+      <input type="text" id="po_key_input" placeholder="Enter key">
+      <button id="po_button" onclick="handleUploadFile()">Submit</button>
+    </div>
     <br />
-    <p>Delete-Object</p>
-    <input type="text" id="do_bucket_input" placeholder="Enter bucket">
-    <input type="text" id="do_key_input" placeholder="Enter key">
-    <button id="do_button" onclick="handleDeleteObject()">Submit</button>
+    <div>
+      <p>Get-Object</p>
+      <input type="text" id="go_bucket_input" placeholder="Enter bucket">
+      <input type="text" id="go_key_input" placeholder="Enter key">
+      <button id="go_button" onclick="handleGetObject()">Submit</button>
+    </div>
     <br />
+    <div>
+      <p>Delete-Object</p>
+      <input type="text" id="do_bucket_input" placeholder="Enter bucket">
+      <input type="text" id="do_key_input" placeholder="Enter key">
+      <button id="do_button" onclick="handleDeleteObject()">Submit</button>
+    </div>
 
-    <script id="upload_script" type="text/javascript" nonce="<%= res.locals.nonce %>">
+    <script id="s3_script" type="text/javascript" nonce="<%= res.locals.nonce %>">
 
       document.getElementById('po_button').style.visibility = 'hidden';
 
       async function sendRequest(path, init) {
-        const url = 'http://' + window.location.host + path;
+        const url = window.location.origin + path;
         return await fetch(url, init);
       }
 
@@ -59,7 +65,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ Bucket, Key })
         };
-        const response = await sendRequest('/create-presigned-post', init);
+        const response = await sendRequest('/s3/create-presigned-post', init);
         const { url, fields } = await response.json();
         const data = { ...fields, file };
         const body = new FormData();
@@ -82,7 +88,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ Bucket, Key })
         };
-        const response = await sendRequest('/create-presigned-url', init);
+        const response = await sendRequest('/s3/create-presigned-url', init);
         const url = await response.text();
         console.log(url);
         window.open(url, '_blank');
@@ -98,7 +104,7 @@
           return;
         }
         const init = { method: 'DELETE' };
-        await sendRequest(`/object/${Bucket}/${Key}`, init);
+        await sendRequest(`/s3/object/${Bucket}/${Key}`, init);
         alert('File deleted successfully');
       }
     </script>
