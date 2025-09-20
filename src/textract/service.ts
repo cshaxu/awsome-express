@@ -11,8 +11,10 @@ import { fileTypeFromBuffer } from 'file-type';
 import fs from 'fs';
 import createHttpError from 'http-errors';
 import path from 'path';
-import pdfParse from 'pdf-parse';
 import { createWorker } from 'tesseract.js';
+
+// 使用 pdf2json 进行 PDF 文本提取，支持逐页处理
+import PDFParser from 'pdf2json';
 
 // 扩展 AWS 类型以包含我们的自定义字段
 export type TextractJob = {
@@ -107,67 +109,126 @@ async function processDocumentAsync(
 
 // 处理 PDF 文档
 async function processPdfDocument(filePath: string): Promise<Block[]> {
-  const blocks: Block[] = [];
+  return new Promise((resolve, reject) => {
+    const blocks: Block[] = [];
+    let currentBlockId = 1;
 
-  // 读取 PDF 文件
-  const pdfBuffer = fs.readFileSync(filePath);
-  const pdfData = await pdfParse(pdfBuffer);
+    const pdfParser = new PDFParser();
 
-  // 为整个文档创建一个 PAGE 块
-  const pageBlock: Block = {
-    BlockType: 'PAGE',
-    Id: '1',
-    Confidence: 95,
-    Geometry: {
-      BoundingBox: { Width: 1.0, Height: 1.0, Left: 0.0, Top: 0.0 },
-    },
-  };
-  blocks.push(pageBlock);
+    pdfParser.on('pdfParser_dataReady', (pdfData: any) => {
+      try {
+        // 获取PDF页面数据
+        const pages = pdfData.Pages;
+        const totalPages = pages?.length || 0;
 
-  // 将 PDF 文本按行分割
-  const lines = pdfData.text
-    .split('\n')
-    .filter((line) => line.trim().length > 0);
+        if (totalPages === 0) {
+          reject(new Error('No pages found in PDF'));
+          return;
+        }
 
-  lines.forEach((line: string, lineIndex: number) => {
-    const lineBlock: Block = {
-      BlockType: 'LINE',
-      Id: `${lineIndex + 2}`,
-      Confidence: 90,
-      Text: line.trim(),
-      Geometry: {
-        BoundingBox: {
-          Width: 0.9,
-          Height: 0.05,
-          Left: 0.05,
-          Top: (lineIndex * 0.05) % 1.0,
-        },
-      },
-    };
-    blocks.push(lineBlock);
+        // 逐页处理PDF
+        pages.forEach((page: any, pageIndex: number) => {
+          const pageNumber = pageIndex + 1;
 
-    // 将行按单词分割
-    const words = line.trim().split(/\s+/);
-    words.forEach((word: string, wordIndex: number) => {
-      const wordBlock: Block = {
-        BlockType: 'WORD',
-        Id: `${lineIndex + 2}-${wordIndex + 1}`,
-        Confidence: 85,
-        Text: word,
-        Geometry: {
-          BoundingBox: {
-            Width: word.length * 0.02,
-            Height: 0.04,
-            Left: 0.05 + wordIndex * 0.15,
-            Top: (lineIndex * 0.05) % 1.0,
-          },
-        },
-      };
-      blocks.push(wordBlock);
+          // 为每个页面创建PAGE块
+          const pageBlock: Block = {
+            BlockType: 'PAGE',
+            Id: currentBlockId.toString(),
+            Confidence: 95,
+            Geometry: {
+              BoundingBox: { Width: 1.0, Height: 1.0, Left: 0.0, Top: 0.0 },
+            },
+            Page: pageNumber,
+          };
+          blocks.push(pageBlock);
+          currentBlockId++;
+
+          // 提取页面文本内容
+          let pageText = '';
+          if (page.Texts && page.Texts.length > 0) {
+            page.Texts.forEach((text: any) => {
+              if (text.R && text.R.length > 0) {
+                text.R.forEach((r: any) => {
+                  if (r.T) {
+                    pageText += decodeURIComponent(r.T);
+                  }
+                });
+              }
+            });
+          }
+
+          // 按照PDF的原始结构处理文本
+          // 如果PDF本身就是一个大的文本块，我们就按原样处理
+          const lines = pageText
+            .split(/\n+/)
+            .filter((line) => line.trim().length > 0);
+
+          // 如果没有文本内容，创建一个默认的文本块
+          if (lines.length === 0) {
+            lines.push(`Page ${pageNumber} - No text content extracted`);
+          }
+
+          // 为每一行创建LINE块
+          lines.forEach((lineText, lineIndex) => {
+            if (lineText) {
+              const lineBlock: Block = {
+                BlockType: 'LINE',
+                Id: currentBlockId.toString(),
+                Confidence: 90,
+                Text: lineText,
+                Geometry: {
+                  BoundingBox: {
+                    Width: 0.9,
+                    Height: 0.05,
+                    Left: 0.05,
+                    Top: (lineIndex * 0.05) % 1.0,
+                  },
+                },
+                Page: pageNumber,
+              };
+              blocks.push(lineBlock);
+              currentBlockId++;
+
+              // 为每个单词创建WORD块
+              const words = lineText.split(/\s+/);
+              words.forEach((word: string, wordIndex: number) => {
+                if (word) {
+                  const wordBlock: Block = {
+                    BlockType: 'WORD',
+                    Id: currentBlockId.toString(),
+                    Confidence: 85,
+                    Text: word,
+                    Geometry: {
+                      BoundingBox: {
+                        Width: word.length * 0.02,
+                        Height: 0.04,
+                        Left: 0.05 + wordIndex * 0.15,
+                        Top: (lineIndex * 0.05) % 1.0,
+                      },
+                    },
+                    Page: pageNumber,
+                  };
+                  blocks.push(wordBlock);
+                  currentBlockId++;
+                }
+              });
+            }
+          });
+        });
+
+        resolve(blocks);
+      } catch (error) {
+        reject(error);
+      }
     });
-  });
 
-  return blocks;
+    pdfParser.on('pdfParser_dataError', (errData: any) => {
+      reject(new Error(`PDF parsing error: ${errData.parserError}`));
+    });
+
+    // 开始解析PDF文件
+    pdfParser.loadPDF(filePath);
+  });
 }
 
 async function processImageDocument(filePath: string): Promise<Block[]> {
@@ -187,17 +248,20 @@ async function processImageDocument(filePath: string): Promise<Block[]> {
     Geometry: {
       BoundingBox: { Width: 1.0, Height: 1.0, Left: 0.0, Top: 0.0 },
     },
+    Page: 1, // 图像文档只有一页
   };
   blocks.push(pageBlock);
 
   const { data } = await worker.recognize(filePath);
   const ocrData = data as any;
 
+  let currentBlockId = 2; // 从2开始，因为PAGE块是1
+
   if (ocrData.lines && ocrData.lines.length > 0) {
     ocrData.lines.forEach((line: any, lineIndex: number) => {
       const lineBlock: Block = {
         BlockType: 'LINE',
-        Id: `${lineIndex + 2}`,
+        Id: currentBlockId.toString(),
         Confidence: Math.round(line.confidence),
         Text: line.text.trim(),
         Geometry: {
@@ -208,15 +272,17 @@ async function processImageDocument(filePath: string): Promise<Block[]> {
             Top: line.bbox.y0 / ocrData.height,
           },
         },
+        Page: 1, // 图像文档只有一页
       };
       blocks.push(lineBlock);
+      currentBlockId++;
 
       // 处理单词
       if (line.words && line.words.length > 0) {
         line.words.forEach((word: any, wordIndex: number) => {
           const wordBlock: Block = {
             BlockType: 'WORD',
-            Id: `${lineIndex + 2}-${wordIndex + 1}`,
+            Id: currentBlockId.toString(),
             Confidence: Math.round(word.confidence),
             Text: word.text,
             Geometry: {
@@ -227,8 +293,10 @@ async function processImageDocument(filePath: string): Promise<Block[]> {
                 Top: word.bbox.y0 / ocrData.height,
               },
             },
+            Page: 1, // 图像文档只有一页
           };
           blocks.push(wordBlock);
+          currentBlockId++;
         });
       }
     });
@@ -255,6 +323,10 @@ async function getDocumentTextDetection(
   if (job.JobStatus === 'SUCCEEDED') {
     result.Blocks = job.Blocks;
     result.StatusMessage = 'Job completed successfully';
+    (job.Blocks ?? [])
+      .filter((block) => block.BlockType === 'LINE')
+      .map((block) => block.Text)
+      .join('\n');
   } else if (job.JobStatus === 'FAILED') {
     result.StatusMessage = job.ErrorMessage;
     result.StatusMessage = 'Job failed';
