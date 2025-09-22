@@ -31,6 +31,7 @@ app.use(
         objectSrc: ["'none'"],
         mediaSrc: ["'self'"],
         frameSrc: ["'self'"],
+        frameAncestors: ["'self'", 'http://localhost:*', 'http://127.0.0.1:*'], // 添加这一行
       },
     },
   }),
