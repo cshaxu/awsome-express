@@ -1,10 +1,10 @@
+import { BASE_URL } from '@/config.js';
 import {
   CopyObjectCommandOutput,
   DeleteObjectCommandOutput,
   PutObjectCommandOutput,
 } from '@aws-sdk/client-s3';
 import { PresignedPost } from '@aws-sdk/s3-presigned-post';
-import { BASE_URL } from '../config.js';
 
 async function createPresignedPost(
   bucket: string,

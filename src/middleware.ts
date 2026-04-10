@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import createHttpError, { HttpError } from 'http-errors';
+import { logError } from './utils/log.js';
 
 export function setTimeout(timeout: number) {
   return (_req: Request, res: Response, next: NextFunction) => {
@@ -22,7 +23,7 @@ export function catchError(
 ) {
   const statusCode = getErrorCode(err, res);
   res.status(statusCode);
-  console.error(err);
+  logError(err);
   res.json(err);
   res.end();
 }

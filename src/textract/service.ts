@@ -1,4 +1,5 @@
 import { LOCAL_STORAGE_PATH } from '@/config.js';
+import { logError, logInfo } from '@/utils/log.js';
 import { generateCode } from '@/utils/token.js';
 import {
   Block,
@@ -96,14 +97,12 @@ async function processDocumentAsync(
     job.JobStatus = 'SUCCEEDED';
     job.EndTime = new Date();
     job.Blocks = blocks;
-    console.log(
-      `Job ${jobId} completed, extracted ${blocks.length} text blocks`,
-    );
+    logInfo(`Job ${jobId} completed, extracted ${blocks.length} text blocks`);
   } catch (error) {
     job.JobStatus = 'FAILED';
     job.EndTime = new Date();
     job.ErrorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error(`Job ${jobId} failed:`, error);
+    logError(`Job ${jobId} failed:`, error);
   }
 }
 
@@ -346,7 +345,7 @@ function cleanupExpiredJobs(maxAgeHours: number = 24): void {
   for (const [jobId, job] of jobs.entries()) {
     if (job.EndTime && now.getTime() - job.EndTime.getTime() > maxAge) {
       jobs.delete(jobId);
-      console.log(`清理过期任务: ${jobId}`);
+      logInfo(`清理过期任务: ${jobId}`);
     }
   }
 }

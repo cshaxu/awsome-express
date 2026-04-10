@@ -1,9 +1,9 @@
+import { BASE_URL } from '@/config.js';
 import {
   DocumentLocation,
   GetDocumentTextDetectionCommandOutput,
   StartDocumentTextDetectionCommandOutput,
 } from '@aws-sdk/client-textract';
-import { BASE_URL } from '../config.js';
 
 async function startDocumentTextDetection(
   documentLocation: DocumentLocation,

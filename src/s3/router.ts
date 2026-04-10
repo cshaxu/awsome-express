@@ -1,6 +1,6 @@
-import { upload } from '@/s3/multer.js';
 import { Router } from 'express';
 import createHttpError from 'http-errors';
+import { upload } from './multer.js';
 import S3Service from './service.js';
 import {
   CopyObjectBody,

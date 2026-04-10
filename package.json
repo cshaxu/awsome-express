@@ -34,6 +34,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@airdev/eslint": "github:cshaxu/airdev-eslint-js#90a2e03cc2d3231fae3ee228a021c87dfcc4d1f7",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/lodash-es": "^4.17.12",
@@ -43,6 +44,7 @@
     "eslint": "^10.2.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-unused-imports": "^4.4.1",
     "globals": "^17.4.0",
     "prettier": "^3.8.2",
     "prettier-plugin-organize-imports": "^4.3.0",

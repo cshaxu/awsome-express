@@ -2,7 +2,8 @@
 
 import app from './app.js';
 import { HOST, PORT } from './config.js';
+import { logInfo } from './utils/log.js';
 
 app.listen(Number(PORT), HOST, () =>
-  console.log(`Server running on ${HOST}:${PORT}`),
+  logInfo(`Server running on ${HOST}:${PORT}`),
 );
