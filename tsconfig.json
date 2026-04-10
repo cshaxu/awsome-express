@@ -1,11 +1,11 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
     "esModuleInterop": true,
     "module": "NodeNext",
     "noImplicitAny": true,
     "outDir": "dist",
-    "paths": { "@/*": ["src/*"] },
+    "rootDir": "src",
+    "paths": { "@/*": ["./src/*"] },
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,

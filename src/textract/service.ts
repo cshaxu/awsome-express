@@ -234,11 +234,9 @@ async function processPdfDocument(filePath: string): Promise<Block[]> {
 async function processImageDocument(filePath: string): Promise<Block[]> {
   const blocks: Block[] = [];
 
-  const worker = await createWorker({
+  const worker = await createWorker('chi_sim+eng', undefined, {
     logger: () => {},
   });
-  await worker.loadLanguage('chi_sim+eng'); // 支持中文简体和英文
-  await worker.initialize('chi_sim+eng');
 
   // 为整个图像创建一个 PAGE 块
   const pageBlock: Block = {
@@ -258,7 +256,7 @@ async function processImageDocument(filePath: string): Promise<Block[]> {
   let currentBlockId = 2; // 从2开始，因为PAGE块是1
 
   if (ocrData.lines && ocrData.lines.length > 0) {
-    ocrData.lines.forEach((line: any, lineIndex: number) => {
+    ocrData.lines.forEach((line: any, _lineIndex: number) => {
       const lineBlock: Block = {
         BlockType: 'LINE',
         Id: currentBlockId.toString(),
@@ -279,7 +277,7 @@ async function processImageDocument(filePath: string): Promise<Block[]> {
 
       // 处理单词
       if (line.words && line.words.length > 0) {
-        line.words.forEach((word: any, wordIndex: number) => {
+        line.words.forEach((word: any, _wordIndex: number) => {
           const wordBlock: Block = {
             BlockType: 'WORD',
             Id: currentBlockId.toString(),

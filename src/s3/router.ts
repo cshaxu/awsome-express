@@ -13,6 +13,8 @@ import {
 } from './types.js';
 
 const S3Router = Router();
+const getObjectKeyFromParams = (params: { Key?: string | string[] }) =>
+  Array.isArray(params.Key) ? params.Key.join('/') : params.Key;
 
 S3Router.post('/create-presigned-post', async (req, res, next) => {
   try {
@@ -34,9 +36,12 @@ S3Router.post('/create-presigned-url', async (req, res, next) => {
   }
 });
 
-S3Router.head('/object/:Bucket/*', async (req, res, next) => {
+S3Router.head('/object/:Bucket/*Key', async (req, res, next) => {
   try {
-    const params = { Bucket: req.params.Bucket, Key: (req.params as any)[0] };
+    const params = {
+      Bucket: req.params.Bucket,
+      Key: getObjectKeyFromParams(req.params),
+    };
     const { Bucket, Key } = await HeadObjectBody.parseAsync(params);
     const headObject = await S3Service.headObject(Bucket, Key);
     if (headObject === null) {
@@ -70,9 +75,12 @@ S3Router.post('/head-object', async (req, res, next) => {
   }
 });
 
-S3Router.get('/object/:Bucket/*', async (req, res, next) => {
+S3Router.get('/object/:Bucket/*Key', async (req, res, next) => {
   try {
-    const params = { Bucket: req.params.Bucket, Key: (req.params as any)[0] };
+    const params = {
+      Bucket: req.params.Bucket,
+      Key: getObjectKeyFromParams(req.params),
+    };
     const { Bucket, Key } = await GetObjectBody.parseAsync(params);
     const object = await S3Service.getObject(Bucket, Key);
     if (object === null) {
@@ -106,11 +114,14 @@ S3Router.post('/get-object', async (req, res, next) => {
 });
 
 S3Router.put(
-  '/object/:Bucket/*',
+  '/object/:Bucket/*Key',
   upload.single('Body'),
   async (req, res, next) => {
     try {
-      const params = { Bucket: req.params.Bucket, Key: (req.params as any)[0] };
+      const params = {
+        Bucket: req.params.Bucket,
+        Key: getObjectKeyFromParams(req.params),
+      };
       const { Bucket, Key } = await PutObjectBody.parseAsync(params);
       const { file } = req;
       if (file === undefined) {
@@ -153,9 +164,12 @@ S3Router.post('/copy-object', async (req, res, next) => {
   }
 });
 
-S3Router.delete('/object/:Bucket/*', async (req, res, next) => {
+S3Router.delete('/object/:Bucket/*Key', async (req, res, next) => {
   try {
-    const params = { Bucket: req.params.Bucket, Key: (req.params as any)[0] };
+    const params = {
+      Bucket: req.params.Bucket,
+      Key: getObjectKeyFromParams(req.params),
+    };
     const { Bucket, Key } = await DeleteObjectBody.parseAsync(params);
     const deleteObject = await S3Service.deleteObject(Bucket, Key);
     if (deleteObject === null) {
